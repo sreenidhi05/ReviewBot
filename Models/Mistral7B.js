@@ -21,7 +21,7 @@ function readTextFromFile(filePath) {
       messages: [
         {
           role: "user",
-          content: `Please provide a summary of the following reviews:\n\n${fileContent}`, // Summarization prompt
+          content: `Please provide a summary of the following reviews:\n\n${fileContent} \n in 100 words`, // Summarization prompt
         },
       ],
       max_tokens: 500, // Adjust token limit as needed

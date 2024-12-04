@@ -19,8 +19,8 @@ def summarize_text():
             input_text = file.read()
 
         summarized_text = model(
-            "Summarize the following: "+input_text, 
-            max_new_tokens=100 
+            "Summarize the reviews: "+input_text, 
+            max_new_tokens=100
         ).strip()  
 
         return jsonify({

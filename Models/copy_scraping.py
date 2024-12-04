@@ -62,7 +62,7 @@ def get_reviews(page):
     pc = 0
     count = 0
 
-    while pc < 5:
+    while pc < 50:
         review_containers = page.query_selector_all("div.EKFha-")
         rating_elements = page.query_selector_all("div[class*='EKFha-'] div.XQDdHH.Ga3i8K")
 
@@ -105,8 +105,8 @@ def get_reviews(page):
         try:
             
             next_button = page.locator("//a[@class='_9QVEpD' and span[text()='Next']]")
-            if pc==1: # scraping just 2 pages 
-                break
+            # if pc==1: # scraping just 2 pages 
+            #     break
             if next_button.is_visible():
                 next_button.click()
                 time.sleep(3)
