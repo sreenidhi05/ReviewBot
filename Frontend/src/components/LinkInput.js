@@ -4,17 +4,45 @@ const LinkInput = () => {
   const [productLink, setProductLink] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [scrapedData, setScrapedData] = useState(null);
+
   const handleInputChange = (event) => {
     setProductLink(event.target.value);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateProductLink(productLink)) {
       console.log("Product Link Submitted:", productLink);
       setErrorMessage("");
-      // Add your API call or processing logic here
-    } else {
+      setLoading(true);
+      try {
+        const response = await fetch("http://127.0.0.1:5000/scrape", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: productLink }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setScrapedData(data);
+          console.log("Scraped Data:", data);
+        } else {
+          setErrorMessage("Failed to fetch data. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+        setErrorMessage("An error occurred while fetching data.");
+      } finally {
+        setLoading(false);
+      }
+
+    } 
+    
+    else {
       setErrorMessage("Please enter a valid product link.");
     }
   };
@@ -53,14 +81,23 @@ const LinkInput = () => {
           <button
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 transition duration-300"
+            disabled={loading}
           >
-            Submit
+            {loading ? "Loading..." : "Submit"}
           </button>
         </form>
         {errorMessage && (
           <p className="mt-6 text-red-500 text-center font-medium">
             {errorMessage}
           </p>
+        )}
+        {scrapedData && (
+          <div className="mt-6 bg-gray-100 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Scraped Data</h2>
+            <pre className="text-sm text-gray-700 overflow-auto">
+              {JSON.stringify(scrapedData, null, 2)}
+            </pre>
+          </div>
         )}
       </div>
     </div>
