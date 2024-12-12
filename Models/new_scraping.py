@@ -2,13 +2,13 @@ from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 from flask_cors import CORS
 import json
-import requests
 # from rag import rag
-
 import time
+import requests
 
 app = Flask(__name__)
 CORS(app)
+
 
 def toggle_sort(page):
     try:
@@ -42,7 +42,6 @@ def get_product_details(page):
         
         image_url = img_element.get_attribute("src")
         print(product_name, product_price, product_rating, image_url)
-        
         
 
         return {
@@ -127,9 +126,7 @@ def get_specifications(page):
 
         except Exception as e:
             print("Error in initial process:", e)
-                
-
-            
+                       
 
         return "No specifications found"
 
@@ -212,9 +209,10 @@ def get_reviews(page):
     return reviews_and_ratings
 
 
+
+
 @app.route('/scrape', methods=['POST'])
 def scrape():
-   
     url = request.form.get('url')
     if not url:
         return jsonify({"error": "URL not provided"}), 400
@@ -230,6 +228,23 @@ def scrape():
             specs = get_specifications(page)
             reviews = get_reviews(page)
             
+            summarization_payload = {'reviews':reviews}
+            summarization_url = 'http://localhost:8000/process-reviews'
+            
+            try:
+                # Send reviews to the summarization service
+                summarization_response = requests.post(
+                    summarization_url, json=summarization_payload
+                )
+                summarization_response.raise_for_status()
+
+                # Extract the summary from the response
+                summary = summarization_response.json().get('summary', 'No summary available')
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error communicating with summarization service: {e}")
+                summary = "Failed to generate summary"
+            
 
             response = {
                 'product_details': product_details,
@@ -237,29 +252,14 @@ def scrape():
                 'specifications': specs
             }
 
-            browser.close()  
-            # return jsonify(response)
-            
-            # Send the reviews to the Node.js service
-            node_js_endpoint = "http://localhost:3000/process-reviews"
-            reviews_text = "\n".join([review["review"] for review in reviews if review["review"] != "No Review Text"])
-            
-            node_payload = {
-                "reviews": reviews_text
-            }
-            node_response = requests.post(node_js_endpoint, json=node_payload)
-
-            if node_response.status_code == 200:
-                summary = node_response.json().get("summary", "No summary returned")
-                response['summary'] = summary
-
+            browser.close()
             return jsonify(response)
-            
-            
 
     except Exception as e:
         return jsonify({"error": f"Error occurred: {e}"}), 500
-  
+    
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
