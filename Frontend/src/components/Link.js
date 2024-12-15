@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LinkInput = () => {
+const Link = () => {
   const [productLink, setProductLink] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -89,7 +89,7 @@ const LinkInput = () => {
   );
 };
 
-export default LinkInput;
+export default Link;
 
 
 

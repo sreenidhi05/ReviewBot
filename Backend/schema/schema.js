@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-// import validator from 'validator';
+const mongoose = require('mongoose')// import validator from 'validator';
 
 const userSchema = new mongoose.Schema({
     email:{
@@ -30,8 +29,8 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-export default User;
 
-// module.exports = {
-//     usersModel
-// }
+
+module.exports = {
+    User
+}

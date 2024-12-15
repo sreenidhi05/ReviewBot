@@ -6,7 +6,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Navbar from './components/Navbar';
 import AboutUs from './components/AboutUs';
-import LinkInput from './components/LinkInput';
+import Link from './components/Link';
 import ProductDescription from './components/ProductDescription';
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
         <Route path="/login" element = {<Login/>}/>
         <Route path = "/register" element={<Register/>}/>
         <Route path="/aboutUs" element={<AboutUs />}/>
-        <Route path = '/linkInput' element={<LinkInput/>}/>
+        <Route path = '/link' element={<Link/>}/>
         <Route path = '/productDescription' element= {<ProductDescription/>}/>
       </Routes>
     </Router>
