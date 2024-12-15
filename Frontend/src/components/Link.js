@@ -30,12 +30,13 @@ const Link = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("API Response:", data); // Debugging log
+          console.log("API Response:", data); 
 
           navigate("/productDescription", 
             { 
               state: 
               { productDetails: data.product_details, 
+                highlights:data.highlights,
                 reviews: data.reviews  
               } 
             });

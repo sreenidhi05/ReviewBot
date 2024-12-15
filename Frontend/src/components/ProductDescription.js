@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale } from "chart.js";
+
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 const ProductDescription = () => {
   const location = useLocation();
@@ -14,6 +18,8 @@ const ProductDescription = () => {
       JSON.parse(localStorage.getItem("productDetails"))
     );
   });
+  const [loading, setLoading] = useState(true); // Add loading state
+
   const reviews = location.state?.reviews || [];
 
   // Save product details to local storage
@@ -75,6 +81,7 @@ const ProductDescription = () => {
       } catch (error) {
         console.error("Error while fetching sentiment:", error);
       }
+      setLoading(false); // Set loading to false when sentiment is fetched
     };
 
     if (reviews.length > 0) {
@@ -86,6 +93,19 @@ const ProductDescription = () => {
   if (!productDetails) {
     return <div className="text-center mt-10 text-gray-600">No product details found!</div>;
   }
+
+  // Pie chart data
+  const pieData = {
+    labels: ["Positive", "Negative"],
+    datasets: [
+      {
+        data: [sentiment.positive, sentiment.negative],
+        backgroundColor: ["#4CAF50", "#F44336"], // Green for positive, red for negative
+        borderColor: ["#388E3C", "#D32F2F"], // Darker shades
+        borderWidth: 1,
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 p-6">
@@ -115,14 +135,12 @@ const ProductDescription = () => {
               {productDetails.rating || "N/A"}
             </p>
             <p className="text-gray-700 text-md leading-relaxed">
-              {productDetails.description ||
-                "No additional description available for this product."}
+              {productDetails.description || (productDetails.highlights ? productDetails.highlights : "No additional description available for this product.")}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Additional Insights Section */}
       <div className="max-w-7xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Summarization Card */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -133,13 +151,22 @@ const ProductDescription = () => {
         {/* Sentiment Analysis Card */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Customer Sentiment</h2>
-          <div className="text-gray-700 space-y-2">
-            <p className="text-lg">
-              <span className="font-semibold">Positive Reviews:</span> {sentiment.positive}
-            </p>
-            <p className="text-lg">
-              <span className="font-semibold">Negative Reviews:</span> {sentiment.negative}
-            </p>
+          {loading ? (
+            <div className="text-center text-gray-600">Loading sentiment analysis...</div>
+          ) : (
+            <div className="text-gray-700 space-y-2">
+              <p className="text-lg">
+                <span className="font-semibold">Positive Reviews:</span> {sentiment.positive}
+              </p>
+              <p className="text-lg">
+                <span className="font-semibold">Negative Reviews:</span> {sentiment.negative}
+              </p>
+            </div>
+          )}
+
+          {/* Pie Chart */}
+          <div className="mt-6 flex justify-center">
+            <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} height={150} />
           </div>
         </div>
       </div>
