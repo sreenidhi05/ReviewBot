@@ -123,7 +123,7 @@ app.post('/linkInput', authenticateToken, async (req, res,next) => {
         }
         catch(error){
             console.log(error);
-            res.status(500).json({ message: 'Error occurred with sentiment', error: error.message })
+            res.status(500).json({ message: 'Error occurred loading knowledge base', error: error.message })
         }
         try{
             console.log("\ncalling sentiment")

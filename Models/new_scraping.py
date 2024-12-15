@@ -1,16 +1,53 @@
 from flask import Flask, request, jsonify
 from playwright.sync_api import sync_playwright
 from flask_cors import CORS
-# from transformers import AutoTokenizer, AutoModelForSequenceClassification
-# import torch
 import json
-# from rag import rag
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
 import time
 
 app = Flask(__name__)
 CORS(app)
-# tokenizer = AutoTokenizer.from_pretrained("siebert/sentiment-roberta-large-english")
-# model = AutoModelForSequenceClassification.from_pretrained("siebert/sentiment-roberta-large-english")
+
+
+tokenizer = AutoTokenizer.from_pretrained("siebert/sentiment-roberta-large-english")
+model = AutoModelForSequenceClassification.from_pretrained("siebert/sentiment-roberta-large-english")
+
+@app.route('/senti', methods=['POST'])
+def analyze_sentiment():
+    review_texts = request.json.get('reviewTexts') 
+    print("Review texts in flask = ",review_texts)
+    if not review_texts or not isinstance(review_texts, list):
+        return jsonify({"error": "Invalid input, expected an array of review texts."}), 400
+    
+    sentiment_results = []
+    positive_count = 0
+    negative_count = 0
+    
+    for review in review_texts:
+        # Tokenize the input review text
+        inputs = tokenizer(review, return_tensors="pt", truncation=True, padding=True, max_length=512)
+
+        # Run the model and get the output
+        with torch.no_grad():
+            outputs = model(**inputs)
+        
+        # Get the predicted sentiment (0 = negative, 1 = positive)
+        logits = outputs.logits
+        sentiment = torch.argmax(logits, dim=-1).item()
+        
+        if sentiment == 1:
+            positive_count += 1
+        else:
+            negative_count += 1
+    
+
+    return jsonify({
+        "positive": positive_count,
+        "negative": negative_count
+    })
+
+
 
 def toggle_sort(page):
     try:
@@ -56,6 +93,51 @@ def get_product_details(page):
     except Exception as e:
         print(f"Error occurred while getting product details: {e}")
         return {}
+
+def get_category(page):
+    try:
+        print("Getting category")
+        page.wait_for_selector("div.DOjaWF", timeout=5000)
+ 
+        cat_divs = page.query_selector_all("div.DOjaWF div.r2CdBx")
+        
+        if len(cat_divs) > 1: 
+            print("in cat lists")
+            cat_div = cat_divs[1]  
+            cat_link = cat_div.query_selector("a")
+            
+            if cat_link:
+                print("got category name")
+                name = cat_link.inner_text() 
+                return name
+        
+        return ""
+    except Exception as e:
+        print(f"Error occurred while getting category: {e}")
+        return ""
+
+def get_highlights(page):
+    try:
+        # Wait for the container div to load
+        page.wait_for_selector("div.DOjaWF", timeout=5000)
+
+        # Locate the container with highlights
+        highlights_div = page.query_selector("div.DOjaWF")
+        if highlights_div:
+            # Locate the div containing the "Highlights" list
+            Hlist = highlights_div.query_selector("div.xFVion")
+            if Hlist:
+                print("In the list div")
+                # Extract all list items under the ul element
+                ul_element = Hlist.query_selector("ul")
+                if ul_element:
+                    print("In the list element, extracting list items")
+                    highlights = [li.inner_text() for li in ul_element.query_selector_all("li._7eSDEz")]
+                    return highlights
+        return []
+    except Exception as e:
+        print(f"Error occurred while getting highlights: {e}")
+        return []
 
 def get_specifications(page):
     try:
@@ -131,6 +213,8 @@ def get_specifications(page):
             print("Error in initial process:", e)
                 
 
+            
+
         return "No specifications found"
 
 def get_reviews(page):
@@ -179,7 +263,10 @@ def get_reviews(page):
 
                     review_text = "No Review Text"
 
-                rating = rating_elements[i].inner_text() if rating_elements else "No Rating"                
+                
+                
+                rating = rating_elements[i].inner_text() if rating_elements else "No Rating"
+                
 
                 reviews_and_ratings.append({
                     "title": title,
@@ -208,30 +295,6 @@ def get_reviews(page):
 
     return reviews_and_ratings
 
-def get_highlights(page):
-    try:
-        # Wait for the container div to load
-        page.wait_for_selector("div.DOjaWF", timeout=5000)
-
-        # Locate the container with highlights
-        highlights_div = page.query_selector("div.DOjaWF")
-        if highlights_div:
-            # Locate the div containing the "Highlights" list
-            Hlist = highlights_div.query_selector("div.xFVion")
-            if Hlist:
-                print("In the list div")
-                # Extract all list items under the ul element
-                ul_element = Hlist.query_selector("ul")
-                if ul_element:
-                    print("In the list element, extracting list items")
-                    highlights = [li.inner_text() for li in ul_element.query_selector_all("li._7eSDEz")]
-                    return highlights
-        return []
-    except Exception as e:
-        print(f"Error occurred while getting highlights: {e}")
-        return []
-
-
 @app.route('/scrape', methods=['POST'])
 def scrape():
     url = request.form.get('url')
@@ -245,20 +308,18 @@ def scrape():
             page = context.new_page()
             page.goto(url)
 
+            category = get_category(page)
             product_details = get_product_details(page)
             specs = get_specifications(page)
             high = get_highlights(page)
-            print("Highlights = ",high)
-
             reviews = get_reviews(page)
             
-            # if not high:
-            #     high= specs["General"]
-            
+
             response = {
                 'product_details': product_details,
+                'category':category,
                 'reviews': reviews,
-                'specifications': specs,
+                'specifications':specs,
                 'highlights':high
             }
 
@@ -267,40 +328,6 @@ def scrape():
 
     except Exception as e:
         return jsonify({"error": f"Error occurred: {e}"}), 500
-    
-
-# @app.route('/senti', methods=['POST'])
-# def analyze_sentiment():
-#     review_texts = request.json.get('reviewTexts') 
-#     print("Review texts in flask = ",review_texts)
-#     if not review_texts or not isinstance(review_texts, list):
-#         return jsonify({"error": "Invalid input, expected an array of review texts."}), 400
-    
-#     sentiment_results = []
-#     positive_count = 0
-#     negative_count = 0
-    
-#     for review in review_texts:
-
-#         inputs = tokenizer(review, return_tensors="pt", truncation=True, padding=True, max_length=512)
-
-#         with torch.no_grad():
-#             outputs = model(**inputs)
-        
-  
-#         logits = outputs.logits
-#         sentiment = torch.argmax(logits, dim=-1).item()
-        
-#         if sentiment == 1:
-#             positive_count += 1
-#         else:
-#             negative_count += 1
-    
-
-#     return jsonify({
-#         "positive": positive_count,
-#         "negative": negative_count
-#     })
 
 
 if __name__ == '__main__':
