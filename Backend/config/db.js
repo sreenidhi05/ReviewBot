@@ -1,5 +1,6 @@
 // to connect to MongoDB with mongoose
 const mongoose = require('mongoose');
+require("dotenv").config();
 const connectDB = async() => {
     try{
         const conn = await mongoose.connect(process.env.MONGO_URI);
@@ -12,3 +13,5 @@ const connectDB = async() => {
     }
 };
 module.exports = connectDB;
+
+// MONGO_URI = "mongodb+srv://sarojasreenidhi:sreenidhiMongodb@cluster0.fmwajps.mongodb.net/PS_ReviewBot?retryWrites=true&w=majorityappName=Cluster0"

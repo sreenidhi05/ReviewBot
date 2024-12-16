@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios"); // To make HTTP requests
-const User = require("../schema/schema.js");
+// const User = require("../schema/schema.js");
+const {User} = require("../schema/schema.js");
 const { HfInference } = require("@huggingface/inference");
 require('dotenv').config();
 const client = new HfInference("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");
@@ -178,18 +179,56 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required" });
+  }
+
   try {
     const user = await User.findOne({ username });
-    if (user && user.password === password) {
-      res.status(200).json({ message: "Login successful" });
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (user.password === password) {
+      res.status(200).json({
+        message: "Login successful",
+        username: user.username,
+      });
     } else {
       res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });
 
+
 //-------------------------------------------------------------------
+
+// Fetch user's search history
+router.get('/search-history', async (req, res) => {
+  const username = req.query.username;
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Assuming search history is stored in a `history` field of the user schema
+    const history = user.history || [];
+
+    res.status(200).json({ history });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching search history', error: error.message });
+  }
+});
+
+//-------------------------------------------------------------------
+
+
 
 module.exports = router;

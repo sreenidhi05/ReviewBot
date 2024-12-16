@@ -8,6 +8,8 @@ import Navbar from './components/Navbar';
 import AboutUs from './components/AboutUs';
 import Link from './components/Link';
 import ProductDescription from './components/ProductDescription';
+import ProfilePage from './components/ProfilePage';
+import ChatBotPage from './components/ChatBotPage';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="/aboutUs" element={<AboutUs />}/>
         <Route path = '/link' element={<Link/>}/>
         <Route path = '/productDescription' element= {<ProductDescription/>}/>
+        <Route path='/profile' element={<ProfilePage/>}/>
+        <Route path = '/chatbot' element = {<ChatBotPage/>}/>
       </Routes>
     </Router>
     </div>

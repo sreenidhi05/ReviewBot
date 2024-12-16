@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ function Login() {
 
   const [message, setMessage] = useState(''); // For confirmation messages
 
+  const navigate = useNavigate();
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,7 +22,7 @@ function Login() {
     // Handle sign-in logic here (e.g., authenticate user)
     console.log("Form submitted:", formData);
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
+      const response = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,6 +34,8 @@ function Login() {
 
       if (response.ok) {
         setMessage('Login successful!');
+        localStorage.setItem('username', formData.username);
+        navigate('/home');
       } else {
         setMessage(data.message || 'Login failed');
       }

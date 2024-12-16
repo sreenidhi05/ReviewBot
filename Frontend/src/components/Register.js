@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link , useNavigate} from 'react-router-dom'; // Import Link for navigation
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -9,6 +9,7 @@ function Register() {
   });
 
   const [message, setMessage] = useState(''); // For confirmation messages
+  const navigate = useNavigate(); 
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -23,7 +24,7 @@ function Register() {
 
     try {
       // Send form data to the server
-      const response = await fetch('http://localhost:5000/api/users/register', {
+      const response = await fetch('http://localhost:4000/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,12 +36,16 @@ function Register() {
 
       if (response.ok) {
         // Display success message
-        setMessage('Registration successful!');
+        setMessage('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/login'); 
+        }, 2000);       
+        
         setFormData({
           email: '',
           username: '',
           password: '',
-        }); // Reset form
+        }); 
       } else {
         // Display server-provided error message or a generic fallback
         setMessage(data.message || 'Registration failed');

@@ -21,7 +21,12 @@ const userSchema = new mongoose.Schema({
     password:{
         type: String,
         required: true
-    }
+    },
+    
+    history: { 
+        type: [String],
+         default: [] 
+        }
 },
 {
     timestamps: true // createdAt, updatedAt
@@ -31,6 +36,4 @@ const User = mongoose.model("User", userSchema);
 
 
 
-module.exports = {
-    User
-}
+module.exports = {User};
