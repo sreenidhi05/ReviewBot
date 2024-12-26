@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link , useNavigate} from 'react-router-dom'; // Import Link for navigation
+import { Link, useNavigate } from 'react-router-dom';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -9,7 +9,8 @@ function Register() {
   });
 
   const [message, setMessage] = useState(''); // For confirmation messages
-  const navigate = useNavigate(); 
+  const [isSuccess, setIsSuccess] = useState(false); // Flag to style messages based on success or error
+  const navigate = useNavigate();
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -35,25 +36,31 @@ function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        // Display success message
+        // Display success message and set success flag
         setMessage('Registration successful! Redirecting to login...');
+        setIsSuccess(true);
+
+        // Redirect to the login page after a delay
         setTimeout(() => {
-          navigate('/login'); 
-        }, 2000);       
-        
+          navigate('/login');
+        }, 2000);
+
+        // Clear the form
         setFormData({
           email: '',
           username: '',
           password: '',
-        }); 
+        });
       } else {
         // Display server-provided error message or a generic fallback
         setMessage(data.message || 'Registration failed');
+        setIsSuccess(false);
       }
     } catch (error) {
       // Log error and display a generic error message
       console.error('Error during registration:', error);
       setMessage('An error occurred while registering. Please try again later.');
+      setIsSuccess(false);
     }
   };
 
@@ -122,7 +129,15 @@ function Register() {
         </form>
 
         {/* Display Message */}
-        {message && <div className="mt-4 text-center text-green-500">{message}</div>}
+        {message && (
+          <div
+            className={`mt-4 text-center font-medium ${
+              isSuccess ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {message}
+          </div>
+        )}
 
         {/* Navigation to Sign In */}
         <div className="mt-6 text-center">

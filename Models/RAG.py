@@ -130,7 +130,7 @@ def query_knowledge_base():
 
         Question: {user_query}
 
-    Based on the context provided, answer the question as accurately as possible. If the answer is not found in the context, respond with "The information is not available in the provided context."""
+    Based on the context provided play the role of a salesperson, answer the question accurately and answer to the point and elaborate but don't overwhelm the customer with text.Greet them back when they greet you and if the answer is not found in the context, respond with "Sorry, the information you asked for is not available. Can I help you with anything else?" and do not give any references from the context provided"""
     messages = [{"role": "user", "content": prompt}]
 
     completion = client.chat.completions.create(

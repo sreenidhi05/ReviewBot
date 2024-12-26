@@ -35,7 +35,7 @@ function Login() {
       if (response.ok) {
         setMessage('Login successful!');
         localStorage.setItem('username', formData.username);
-        navigate('/home');
+        navigate('/link');
       } else {
         setMessage(data.message || 'Login failed');
       }
