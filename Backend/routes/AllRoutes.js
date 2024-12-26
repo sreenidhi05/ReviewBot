@@ -30,28 +30,28 @@ router.post('/linkInput', async (req, res,next) => {
         let sentimentRes = null;
         let sumRes = null; 
 
-        // try{
-        //     console.log("\n Loading knowledge base");
-        //     await axios.post('http://127.0.0.1:8000/upload_reviews',{reviews})
-        //     .then(console.log("Loaded successfully"))
-        // }
-        // catch(error){
-        //     console.log(error);
-        //     res.status(500).json({ message: 'Error occurred with sentiment', error: error.message })
-        // }
+        try{
+            console.log("\n Loading knowledge base");
+            await axios.post('http://127.0.0.1:5000/upload_reviews',{reviews})
+            .then(console.log("Loaded successfully"))
+        }
+        catch(error){
+            console.log(error);
+            res.status(500).json({ message: 'Error occurred loading knowledge base', error: error.message })
+        }
 
         try{
-          sumRes = await axios.post(
-           'http://localhost:3000/summarize',
-           { reviews },
+          console.log("\ncalling summarize")
+          sumRes = await axios.post('http://localhost:3000/summarize',{ reviews },
            { headers: { 'Content-Type': 'application/json' } }
            
           );
           console.log("summarized");
-      }
-       catch(error){
-         console.log("error in summarizing",error);
-       }
+        }
+        catch(error){
+          console.log("error in summarizing",error);
+        }
+
         try{
             console.log("\ncalling sentiment")
             sentimentRes = await axios.post('http://localhost:3000/analyzeSentiment',{ reviews})
@@ -67,7 +67,8 @@ router.post('/linkInput', async (req, res,next) => {
             sentiment : sentimentRes?.data,
             highlights : high
         })
-    } catch (error) {
+    } 
+    catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error occurred', error: error.message });
     }
