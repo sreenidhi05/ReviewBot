@@ -23,18 +23,18 @@ export default function Navbar() {
 
   const handleSignOut = () => {
     // Remove user info from localStorage
-    localStorage.removeItem('username'); // Or any other user token/authentication method you're using
+    sessionStorage.removeItem('username'); // Or any other user token/authentication method you're using
     navigate('/login'); // Redirect to login page after sign out
   };
 
   // Check if the user is logged in by verifying if 'username' exists in localStorage
-  const isLoggedIn = localStorage.getItem('username') !== null;
+  const isLoggedIn = sessionStorage.getItem('username') !== null;
 
   // Fetch the username from localStorage
-  const username = isLoggedIn ? localStorage.getItem('username') : null;
+  const username = isLoggedIn ? sessionStorage.getItem('username') : null;
 
   return (
-    <Disclosure as="nav" className="bg-[#bcd4d3]">
+    <Disclosure as="nav" className="bg-[#bcd4d3] fixed top-0 w-full z-50">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">

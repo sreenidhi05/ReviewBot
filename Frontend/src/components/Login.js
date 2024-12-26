@@ -34,7 +34,7 @@ function Login() {
 
       if (response.ok) {
         setMessage('Login successful!');
-        localStorage.setItem('username', formData.username);
+        sessionStorage.setItem('username', formData.username);
         navigate('/link');
       } else {
         setMessage(data.message || 'Login failed');
