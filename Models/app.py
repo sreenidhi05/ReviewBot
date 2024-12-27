@@ -20,8 +20,6 @@ from huggingface_hub import InferenceClient
 
 
 
-
-
 app = Flask(__name__)
 CORS(app)
 #--------------------------------------------------------------------------
@@ -31,7 +29,7 @@ model = AutoModelForSequenceClassification.from_pretrained("siebert/sentiment-ro
 #--------------------------------------------------------------------------
 #rag key
 
-client = InferenceClient(api_key="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")
+client = InferenceClient(api_key="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")
 
 # Initialize global variables
 RAW_KNOWLEDGE_BASE = []
@@ -103,43 +101,33 @@ def upload_reviews():
 @app.route('/query', methods=['POST'])
 def query_knowledge_base():
     global KNOWLEDGE_VECTOR_DATABASE
-    try:
-        if KNOWLEDGE_VECTOR_DATABASE is None:
-            return jsonify({"error": "Knowledge base is not initialized."}), 400
+    if KNOWLEDGE_VECTOR_DATABASE is None:
+        return jsonify({"error": "Knowledge base is not initialized."}), 400
 
-        user_query = request.json.get('question', '').strip()
-        if not user_query:
-            return jsonify({"error": "No query provided"}), 400
+    user_query = request.json.get('question', '')
+    if not user_query:
+        return jsonify({"error": "No query provided"}), 400
 
-        retrieval_docs = KNOWLEDGE_VECTOR_DATABASE.similarity_search(query=user_query, k=2)
-        retrieved_docs_text = [doc.page_content for doc in retrieval_docs]
-        context = "\n".join(retrieved_docs_text)
+    retrieval_docs = KNOWLEDGE_VECTOR_DATABASE.similarity_search(query=user_query, k=2)
+    retrieved_docs_text = [doc.page_content for doc in retrieval_docs]
+    context = "\n".join(retrieved_docs_text)
 
-        prompt = f"""
-            Context: {context}
+    prompt = f"""
+        Context: {context}
 
-            Question: {user_query}
+        Question: {user_query}
 
-        Based on the provided product reviews and features, play the role of a friendly and professional salesperson. Answer user queries accurately, concisely, and to the point. Elaborate where necessary, but avoid overwhelming the customer with excessive details. Greet the user warmly only if they greet you first. If the answer is not found in the provided context, respond politely with: "Sorry, the information you asked for is not available. Can I help you with anything else?" Do not provide any references or quotes from the context directly. Always maintain a polite and engaging tone, encouraging the user to ask follow-up questions if needed."""
-        messages = [{"role": "user", "content": prompt}]
+    Based on the context provided, answer the question as accurately as possible. If the answer is not found in the context, respond with "The information is not available in the provided context."""
+    messages = [{"role": "user", "content": prompt}]
 
-        completion = client.chat.completions.create(
-            model="Qwen/Qwen2.5-Coder-32B-Instruct",
-            messages=messages,
-            max_tokens=500
-        )
-        response = completion.choices[0].message["content"]
+    completion = client.chat.completions.create(
+        model="Qwen/Qwen2.5-Coder-32B-Instruct",
+        messages=messages,
+        max_tokens=500
+    )
+    response = completion.choices[0].message["content"]
 
-        return jsonify({"answer": response})
-    except Exception as e:
-        print(f"Error in query endpoint: {e}")
-        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
-
-#Based on the provided product reviews and features, play the role of a friendly and professional salesperson. Answer user queries accurately, concisely, and to the point. Elaborate where necessary, but avoid overwhelming the customer with excessive details. Greet the user warmly only if they greet you first. If the answer is not found in the provided context, respond politely with: "Sorry, the information you asked for is not available. Can I help you with anything else?" Do not provide any references or quotes from the context directly. Always maintain a polite and engaging tone, encouraging the user to ask follow-up questions if needed.
-
-
-# Based on the context provided play the role of a salesperson, answer the question accurately and answer to the point and elaborate but don't overwhelm the customer with text.Greet them back when they greet you and if the answer is not found in the context, respond with "Sorry, the information you asked for is not available. Can I help you with anything else?" and do not give any references from the context provided"""
-
+    return jsonify({"answer": response})
 #----------------------------------------------------------------------------------------
 #scraper routes and functions
 
@@ -389,7 +377,7 @@ def scrape():
             print("Highlights = ",high)
 
             reviews = get_reviews(page)
-                  
+                    
             response = {
                 'product_details': product_details,
                 'reviews': reviews,
